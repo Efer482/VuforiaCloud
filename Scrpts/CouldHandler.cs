@@ -10,6 +10,8 @@ public class CouldHandler : MonoBehaviour, IObjectRecoEventHandler
     private string mTargetMetadata = "";
     public GameObject MainPlayer;
 
+    public ImageTargetBehaviour ImageTargetTemplate;
+
     public void OnInitError(TargetFinder.InitState initError)
     {
         throw new System.NotImplementedException();
@@ -27,8 +29,18 @@ public class CouldHandler : MonoBehaviour, IObjectRecoEventHandler
         // do something with the target metadata
         mTargetMetadata = cloudRecoSearchResult.MetaData;
         Debug.Log("URL: " + mTargetMetadata);
-        MainPlayer.GetComponent<VideoPlayer>().url = mTargetMetadata.Trim();
-        MainPlayer.GetComponent<VideoPlayer>().Play();
+
+        // Build augmentation based on target 
+        if (ImageTargetTemplate)
+        {
+            // enable the new result with the same ImageTargetBehaviour: 
+            ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
+            tracker.GetTargetFinder<ImageTargetFinder>().EnableTracking(targetSearchResult, ImageTargetTemplate.gameObject);
+
+            MainPlayer.GetComponent<VideoPlayer>().url = mTargetMetadata.Trim();
+            MainPlayer.GetComponent<VideoPlayer>().Play();
+        }
+
         // stop the target finder (i.e. stop scanning the cloud)
         mCloudRecoBehaviour.CloudRecoEnabled = false;
     }
